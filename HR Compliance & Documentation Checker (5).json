@@ -1,0 +1,1601 @@
+{
+  "name": "HR Compliance & Documentation Checker",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hr-compliance-check",
+        "options": {}
+      },
+      "id": "dd022b59-41e1-476f-a50a-97f8425a3c65",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        11152,
+        3040
+      ],
+      "webhookId": "hr-compliance-check"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "employees"
+      },
+      "id": "ce17e599-8c44-41be-bc5e-4cc14411422d",
+      "name": "Get Employee List",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        11520,
+        3040
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "p5QA5oySRDzqpMqn",
+          "name": "Supabase account 3"
+        }
+      },
+      "notes": "Fetch all active employees from Supabase"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+              "name": "employeeID",
+              "value": "={{ $json.emp_id }}",
+              "type": "string"
+            },
+            {
+              "id": "b2c3d4e5-f6a7-8901-2345-678901bcdefg",
+              "name": "employeeName",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "c3d4e5f6-a7b8-9012-3456-789012cdefgh",
+              "name": "department",
+              "value": "={{ $json.department }}",
+              "type": "string"
+            },
+            {
+              "id": "d4e5f6a7-b8c9-0123-4567-890123defghi",
+              "name": "role",
+              "value": "={{ $json.role }}",
+              "type": "string"
+            },
+            {
+              "id": "e5f6a7b8-c9d0-1234-5678-901234efghij",
+              "name": "joinDate",
+              "value": "={{ $json.join_date }}",
+              "type": "string"
+            },
+            {
+              "id": "f6a7b8c9-d0e1-2345-6789-012345fghijk",
+              "name": "employmentType",
+              "value": "={{ $json.employment_type }}",
+              "type": "string"
+            },
+            {
+              "id": "email-assignment-id",
+              "name": "email",
+              "value": "={{ $json.email }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d84fe38e-67e1-4f01-bbad-8a1d916a381f",
+      "name": "Set Employee Variables",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        11984,
+        2960
+      ],
+      "notes": "Extract and set employee information for processing"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "compliance_matrix"
+      },
+      "id": "5844a36c-28dc-4269-a5a9-ae4b3a865666",
+      "name": "Get Required Documents",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        12240,
+        2736
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "p5QA5oySRDzqpMqn",
+          "name": "Supabase account 3"
+        }
+      },
+      "notes": "Fetch compliance requirements from Supabase"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "12345678-1234-5678-90ab-cdef12345678",
+              "leftValue": "={{ $json.department }}",
+              "rightValue": "={{ $('Set Employee Variables').item.json.department }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "23456789-2345-6789-01bc-def123456789",
+              "leftValue": "={{ $json.role }}",
+              "rightValue": "={{ $('Set Employee Variables').item.json.role }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "75a432cf-7bdb-4ebb-8bc9-a9240fc6a5b3",
+      "name": "Filter Required Docs",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        12432,
+        3136
+      ],
+      "alwaysOutputData": true,
+      "notes": "Filter documents applicable to this employee"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "document_inventory"
+      },
+      "id": "39969d47-5ec0-4ba3-b919-4a60e3552fb6",
+      "name": "Get Employee Documents",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        12240,
+        2928
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "p5QA5oySRDzqpMqn",
+          "name": "Supabase account 3"
+        }
+      },
+      "notes": "Fetch actual documents from Supabase"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "34567890-3456-7890-12cd-ef1234567890",
+              "leftValue": "={{ $json.employee_id }}",
+              "rightValue": "={{ $('Set Employee Variables').item.json.employeeID }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "00827fa1-df83-48ed-86af-42ea40d9994b",
+      "name": "Filter Employee Docs",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        12432,
+        3376
+      ],
+      "notes": "Filter documents for current employee only"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "policy_acknowledgements"
+      },
+      "id": "e0610a0e-58de-4f98-86ec-b1df0895c4e1",
+      "name": "Get Policy Acknowledgements",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        12224,
+        3152
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "p5QA5oySRDzqpMqn",
+          "name": "Supabase account 3"
+        }
+      },
+      "notes": "Fetch policy acknowledgements from Supabase"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "45678901-4567-8901-23de-f12345678901",
+              "leftValue": "={{ $json.employee_id }}",
+              "rightValue": "={{ $('Set Employee Variables').item.json.employeeID }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a0382da1-7d1c-4e58-b1f4-8ea45ae1c71e",
+      "name": "Filter Employee Policies",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        12432,
+        3536
+      ],
+      "notes": "Filter acknowledgements for current employee"
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// ─────────────────────────────────────────────────────────────────\n// Analyze Compliance Gaps\n// Input: items from Merge Data (combineAll mode)\n//   _0 = required doc row (from Compliance_Matrix via Filter Required Docs)\n//   _1 = employee doc row (from Document_Inventory via Filter Employee Docs)\n//   _2 = policy ack row   (from Policy_Acknowledgements via Filter Employee Policies)\n//\n// We group by employeeID and perform gap analysis per employee.\n// ─────────────────────────────────────────────────────────────────\n\nconst items = $input.all();\n\n// Collect all required docs, actual docs, policies from all merged items\nconst allRequiredDocs  = [];\nconst allActualDocs    = [];\nconst allPolicies      = [];\n\n// Employee info carried through from Set Employee Variables via filter nodes\nlet employeeInfo = {\n  employeeID:      '',\n  employeeName:    '',\n  department:      '',\n  role:            '',\n  joinDate:        '',\n  employmentType:  '',\n  email:           ''\n};\n\nfor (const item of items) {\n  const d = item.json;\n\n  // Pick up employee info wherever it exists\n  if (d.employeeID)   employeeInfo.employeeID      = d.employeeID;\n  if (d.employeeName) employeeInfo.employeeName    = d.employeeName;\n  if (d.department)   employeeInfo.department      = d.department;\n  if (d.role)         employeeInfo.role            = d.role;\n  if (d.joinDate)     employeeInfo.joinDate        = d.joinDate;\n  if (d.employmentType) employeeInfo.employmentType = d.employmentType;\n  if (d.email)          employeeInfo.email          = d.email;\n\n  // Compliance_Matrix row (required doc definition)\n  if (d.document_type) {\n    allRequiredDocs.push({\n      document_type:   d.document_type,\n      validity_period: Number(d.validity_period) || 0,\n      criticality:     d.criticality     || 'Medium',\n      category:        d.category        || 'General',\n      applies_to:      d.applies_to      || 'All'\n    });\n  }\n\n  // Document_Inventory row (actual uploaded doc)\n  if (d.doc_type) {\n    allActualDocs.push({\n      type:        d.doc_type,\n      upload_date: d.upload_date  || '',\n      expiry_date: d.expiry_date  || '',\n      status:      d.doc_status   || d.status || 'Active'\n    });\n  }\n\n  // Policy_Acknowledgements row\n  if (d.policy_name) {\n    allPolicies.push({\n      policy_name:       d.policy_name,\n      acknowledged_date: d.acknowledged_date || d.ack_date || '',\n      version:           d.version || '1.0'\n    });\n  }\n}\n\n// Universal required documents (baseline for every employee)\nconst universalRequiredDocs = [\n  { document_type: 'Employment Contract',    validity_period: 0,  criticality: 'High',   category: 'Onboarding' },\n  { document_type: 'ID Proof',               validity_period: 60, criticality: 'High',   category: 'Legal'      },\n  { document_type: 'Address Proof',          validity_period: 12, criticality: 'Medium', category: 'Legal'      },\n  { document_type: 'Educational Certificates', validity_period: 0, criticality: 'High',  category: 'Onboarding' },\n  { document_type: 'Background Check',       validity_period: 24, criticality: 'High',   category: 'Legal'      },\n  { document_type: 'Tax Forms',              validity_period: 12, criticality: 'High',   category: 'Payroll'    },\n  { document_type: 'Emergency Contact',      validity_period: 12, criticality: 'Medium', category: 'HR'         },\n  { document_type: 'Bank Details',           validity_period: 0,  criticality: 'High',   category: 'Payroll'    }\n];\n\n// Deduplicate combined required docs list\nconst reqMap = {};\nfor (const d of [...universalRequiredDocs, ...allRequiredDocs]) {\n  reqMap[d.document_type.toLowerCase().trim()] = d;\n}\nconst combinedRequired = Object.values(reqMap);\n\n// Build actual doc lookup\nconst actualMap = {};\nfor (const d of allActualDocs) {\n  actualMap[d.type.toLowerCase().trim()] = d;\n}\n\n// Required policies\nconst requiredPolicies = [\n  'Code of Conduct',\n  'Data Privacy Policy',\n  'Anti-Harassment Policy',\n  'Information Security Policy',\n  'Confidentiality Agreement'\n];\n\n// Policy lookup\nconst policyMap = {};\nfor (const p of allPolicies) {\n  policyMap[p.policy_name.toLowerCase().trim()] = p;\n}\n\nconst gaps = {\n  missing_documents:        [],\n  expired_documents:        [],\n  expiring_soon:            [],\n  pending_acknowledgements: []\n};\n\nconst today = new Date();\n\n// ── Check each required document ─────────────────────────────────\nfor (const req of combinedRequired) {\n  const key   = req.document_type.toLowerCase().trim();\n  const found = actualMap[key];\n\n  if (!found) {\n    gaps.missing_documents.push({\n      document:    req.document_type,\n      criticality: req.criticality,\n      category:    req.category,\n      action:      'Upload Required'\n    });\n  } else if (req.validity_period > 0) {\n    const uploadDate = new Date(found.upload_date);\n    if (isNaN(uploadDate.getTime())) continue; // skip unparseable dates\n\n    const expiryDate = new Date(uploadDate);\n    expiryDate.setMonth(expiryDate.getMonth() + req.validity_period);\n\n    const daysUntilExpiry = Math.floor((expiryDate - today) / 86400000);\n\n    if (daysUntilExpiry < 0) {\n      gaps.expired_documents.push({\n        document:    req.document_type,\n        upload_date: found.upload_date,\n        expiry_date: expiryDate.toISOString().split('T')[0],\n        days_overdue: Math.abs(daysUntilExpiry),\n        criticality: req.criticality,\n        action:      'Renew Immediately'\n      });\n    } else if (daysUntilExpiry <= 30) {\n      gaps.expiring_soon.push({\n        document:       req.document_type,\n        expiry_date:    expiryDate.toISOString().split('T')[0],\n        days_remaining: daysUntilExpiry,\n        criticality:    req.criticality,\n        action:         'Schedule Renewal'\n      });\n    }\n  }\n}\n\n// ── Check each required policy ────────────────────────────────────\nfor (const policyName of requiredPolicies) {\n  const key = policyName.toLowerCase().trim();\n  const ack = Object.entries(policyMap).find(([k]) => k.includes(key.split(' ')[0]))?.[1];\n\n  if (!ack) {\n    gaps.pending_acknowledgements.push({\n      policy:          policyName,\n      status:          'Not Acknowledged',\n      last_acknowledged: null,\n      action:          'Acknowledge Policy'\n    });\n  } else {\n    const ackDate        = new Date(ack.acknowledged_date);\n    const monthsSinceAck = (today - ackDate) / (1000 * 60 * 60 * 24 * 30);\n    if (monthsSinceAck > 12) {\n      gaps.pending_acknowledgements.push({\n        policy:          policyName,\n        status:          'Outdated Acknowledgement',\n        last_acknowledged: ack.acknowledged_date,\n        action:          'Re-acknowledge Policy'\n      });\n    }\n  }\n}\n\n// ── Scoring ───────────────────────────────────────────────────────\nconst totalReqs  = combinedRequired.length + requiredPolicies.length;\nconst totalGaps  = gaps.missing_documents.length +\n                   gaps.expired_documents.length +\n                   gaps.pending_acknowledgements.length;\nconst compliance_score = Math.round(((totalReqs - totalGaps) / totalReqs) * 100);\n\nconst highCritGaps = [\n  ...gaps.missing_documents.filter(d => d.criticality === 'High'),\n  ...gaps.expired_documents.filter(d => d.criticality === 'High')\n].length;\n\nconst risk_level = (compliance_score < 60 || highCritGaps >= 3) ? 'High'\n                 : (compliance_score < 80 || highCritGaps >= 1) ? 'Medium'\n                 : 'Low';\n\nreturn [{\n  json: {\n    ...employeeInfo,\n    ...gaps,\n    compliance_score,\n    risk_level,\n    total_required:       totalReqs,\n    total_gaps:           totalGaps,\n    high_criticality_gaps: highCritGaps,\n    check_date:           today.toISOString().split('T')[0]\n  }\n}];\n"
+      },
+      "id": "7bc17296-7ec2-4fbd-81d7-33ec32df0c3b",
+      "name": "Analyze Compliance Gaps",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        13008,
+        3488
+      ],
+      "notes": "JavaScript code to identify missing, expired docs and calculate compliance score"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.compliance_score }}",
+                    "rightValue": 60,
+                    "operator": {
+                      "type": "number",
+                      "operation": "lt"
+                    }
+                  },
+                  {
+                    "leftValue": "={{ $json.risk_level }}",
+                    "rightValue": "High",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "or"
+              },
+              "renameOutput": true,
+              "outputKey": "High Risk"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.compliance_score }}",
+                    "rightValue": 60,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gte"
+                    }
+                  },
+                  {
+                    "leftValue": "={{ $json.compliance_score }}",
+                    "rightValue": 80,
+                    "operator": {
+                      "type": "number",
+                      "operation": "lt"
+                    }
+                  },
+                  {
+                    "leftValue": "={{ $json.risk_level }}",
+                    "rightValue": "Medium",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "or"
+              },
+              "renameOutput": true,
+              "outputKey": "Medium Risk"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.compliance_score }}",
+                    "rightValue": 80,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gte"
+                    }
+                  },
+                  {
+                    "leftValue": "={{ $json.risk_level }}",
+                    "rightValue": "Low",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "or"
+              },
+              "renameOutput": true,
+              "outputKey": "Low Risk"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0b8cd055-c281-48e9-8a6b-86592a7b9bf8",
+      "name": "Check Risk Level",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        13200,
+        2784
+      ],
+      "notes": "Route based on compliance score - High/Medium/Low risk"
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// ─────────────────────────────────────────────────────────────────\n// Prepare Employee Report Data\n// Flattens per-employee compliance object into a flat row array\n// compatible with n8n's SpreadsheetFile (toFile) node.\n// Each output item = one document/policy row.\n// ─────────────────────────────────────────────────────────────────\nconst items = $input.all();\nconst rows  = [];\n\nfor (const item of items) {\n  const e = item.json;\n\n  const base = {\n    'Employee ID':        e.employeeID      || '',\n    'Employee Name':      e.employeeName    || '',\n    'Department':         e.department      || '',\n    'Role':               e.role            || '',\n    'Join Date':          e.joinDate        || '',\n    'Check Date':         e.check_date      || new Date().toISOString().split('T')[0],\n    'Compliance Score':   (e.compliance_score ?? 0) + '%',\n    'Risk Level':         e.risk_level      || '',\n    'Total Requirements': e.total_required  || 0,\n    'Total Gaps':         e.total_gaps      || 0,\n  };\n\n  // --- Missing documents ---\n  for (const d of (e.missing_documents || [])) {\n    rows.push({ json: {\n      ...base,\n      'Section':           'Missing Document',\n      'Document / Policy': d.document,\n      'Category':          d.category,\n      'Criticality':       d.criticality,\n      'Status':            'MISSING',\n      'Upload Date':       '',\n      'Expiry Date':       '',\n      'Days Overdue':      '',\n      'Days Remaining':    '',\n      'Action Required':   d.action\n    }});\n  }\n\n  // --- Expired documents ---\n  for (const d of (e.expired_documents || [])) {\n    rows.push({ json: {\n      ...base,\n      'Section':           'Expired Document',\n      'Document / Policy': d.document,\n      'Category':          'Legal',\n      'Criticality':       d.criticality,\n      'Status':            'EXPIRED',\n      'Upload Date':       d.upload_date,\n      'Expiry Date':       d.expiry_date,\n      'Days Overdue':      d.days_overdue,\n      'Days Remaining':    '',\n      'Action Required':   d.action\n    }});\n  }\n\n  // --- Expiring soon ---\n  for (const d of (e.expiring_soon || [])) {\n    rows.push({ json: {\n      ...base,\n      'Section':           'Expiring Soon',\n      'Document / Policy': d.document,\n      'Category':          'Legal',\n      'Criticality':       d.criticality,\n      'Status':            'EXPIRING SOON',\n      'Upload Date':       '',\n      'Expiry Date':       d.expiry_date,\n      'Days Overdue':      '',\n      'Days Remaining':    d.days_remaining,\n      'Action Required':   d.action\n    }});\n  }\n\n  // --- Pending acknowledgements ---\n  for (const p of (e.pending_acknowledgements || [])) {\n    rows.push({ json: {\n      ...base,\n      'Section':           'Policy Acknowledgement',\n      'Document / Policy': p.policy,\n      'Category':          'Compliance',\n      'Criticality':       'High',\n      'Status':            p.status,\n      'Upload Date':       p.last_acknowledged || '',\n      'Expiry Date':       '',\n      'Days Overdue':      '',\n      'Days Remaining':    '',\n      'Action Required':   p.action\n    }});\n  }\n\n  // If employee is 100% compliant — still emit one summary row\n  if (rows.filter(r => r.json['Employee ID'] === e.employeeID).length === 0) {\n    rows.push({ json: {\n      ...base,\n      'Section':           'Summary',\n      'Document / Policy': 'All documents compliant',\n      'Category':          '',\n      'Criticality':       '',\n      'Status':            'COMPLIANT',\n      'Upload Date':       '',\n      'Expiry Date':       '',\n      'Days Overdue':      '',\n      'Days Remaining':    '',\n      'Action Required':   'None'\n    }});\n  }\n}\n\n// Attach metadata for Google Drive file naming (on first item)\nif (rows.length > 0) {\n  rows[0].json._meta_employeeID   = rows[0].json['Employee ID'];\n  rows[0].json._meta_employeeName = rows[0].json['Employee Name'];\n  rows[0].json._meta_checkDate    = rows[0].json['Check Date'];\n}\n\nreturn rows;\n"
+      },
+      "id": "111921d7-c1a2-4b61-8316-81220a6b6bea",
+      "name": "Prepare Employee Report Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        13424,
+        3424
+      ],
+      "notes": "Format data for individual employee Excel reports"
+    },
+    {
+      "parameters": {
+        "operation": "toFile",
+        "fileFormat": "xlsx",
+        "options": {
+          "headerRow": true,
+          "sheetName": "Compliance Checklist"
+        }
+      },
+      "id": "1a56e4e3-027a-41cb-9513-5ffaa03f2037",
+      "name": "Create Employee Excel Report",
+      "type": "n8n-nodes-base.spreadsheetFile",
+      "typeVersion": 2,
+      "position": [
+        13664,
+        3040
+      ],
+      "alwaysOutputData": true,
+      "notes": "Generate Excel file with multiple sheets for each employee"
+    },
+    {
+      "parameters": {
+        "name": "={{ 'HR_Compliance_' + $json.metadata.employeeID + '_' + $json.metadata.employeeName.replace(/ /g,'_') + '_' + $json.metadata.checkDate + '.xlsx' }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1X-L0LcG77dIJPlrSVyQKb65GmaEnVbnt",
+          "mode": "list",
+          "cachedResultName": "n8n",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1X-L0LcG77dIJPlrSVyQKb65GmaEnVbnt"
+        },
+        "options": {}
+      },
+      "id": "9f8b4bf9-e65f-4d57-8c06-11e3c54f73a8",
+      "name": "Save to Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        13920,
+        3472
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "t81VH6ZCVei6Bv3J",
+          "name": "Google Drive - Egeneration"
+        }
+      },
+      "notes": "Upload individual reports to Google Drive folder"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "id": "1513a0f6-6630-4587-9d60-22a6832b0aad",
+      "name": "Aggregate All Results",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        14016,
+        2768
+      ],
+      "notes": "Combine all employee results for master dashboard"
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// ─────────────────────────────────────────────────────────────────\n// Generate Dashboard Analytics\n// Input: single item from Aggregate All Results\n// The Aggregate node wraps all items as: { data: [ ...items ] }\n// Each item is the Google Drive upload result; we need to reach\n// back to the compliance data via $('Analyze Compliance Gaps').\n//\n// Strategy: re-aggregate from all items in the run context.\n// ─────────────────────────────────────────────────────────────────\n\n// $input.item.json.data contains all aggregated items from Save to Google Drive\n// Those items carry binary data not compliance scores.\n// We use $('Analyze Compliance Gaps').all() to get all compliance results.\nlet employees = [];\n\ntry {\n  // Primary: pull all compliance results from the named node\n  const analysisItems = $('Analyze Compliance Gaps').all();\n  employees = analysisItems.map(i => i.json);\n} catch(e) {\n  // Fallback: parse from aggregated data if context available\n  const raw = $input.item.json;\n  employees = (raw.data || (Array.isArray(raw) ? raw : [raw]));\n}\n\nif (employees.length === 0) {\n  return [{ json: {\n    executive_summary: { error: 'No employee data found' },\n    department_analysis: [], common_gaps: [], critical_employees: [],\n    risk_distribution: [], all_employees: []\n  }}];\n}\n\nconst totalEmployees     = employees.length;\nconst avgCompliance      = Math.round(employees.reduce((s,e) => s + (e.compliance_score||0), 0) / totalEmployees);\nconst highRiskCount      = employees.filter(e => e.risk_level === 'High').length;\nconst mediumRiskCount    = employees.filter(e => e.risk_level === 'Medium').length;\nconst lowRiskCount       = employees.filter(e => e.risk_level === 'Low').length;\nconst reportDate         = new Date().toISOString().split('T')[0];\n\n// Executive summary\nconst executive_summary = {\n  'Report Date':             reportDate,\n  'Total Employees Checked': totalEmployees,\n  'Average Compliance Score': avgCompliance + '%',\n  'High Risk Employees':      highRiskCount,\n  'Medium Risk Employees':    mediumRiskCount,\n  'Low Risk Employees':       lowRiskCount,\n  'Overall Status': avgCompliance >= 80 ? 'Good' : avgCompliance >= 60 ? 'Needs Attention' : 'Critical'\n};\n\n// Department analysis\nconst deptMap = {};\nfor (const emp of employees) {\n  const dept = emp.department || 'Unknown';\n  if (!deptMap[dept]) deptMap[dept] = { count:0, totalScore:0, high:0, medium:0, low:0 };\n  deptMap[dept].count++;\n  deptMap[dept].totalScore += (emp.compliance_score || 0);\n  if (emp.risk_level === 'High')   deptMap[dept].high++;\n  if (emp.risk_level === 'Medium') deptMap[dept].medium++;\n  if (emp.risk_level === 'Low')    deptMap[dept].low++;\n}\nconst department_analysis = Object.entries(deptMap).map(([dept, d]) => ({\n  'Department':      dept,\n  'Employee Count':  d.count,\n  'Avg Compliance':  Math.round(d.totalScore / d.count) + '%',\n  'High Risk':       d.high,\n  'Medium Risk':     d.medium,\n  'Low Risk':        d.low\n}));\n\n// Common gaps\nconst gapCounter = {};\nfor (const emp of employees) {\n  for (const d of (emp.missing_documents || []))        { gapCounter[d.document]                      = (gapCounter[d.document] || 0) + 1; }\n  for (const d of (emp.expired_documents || []))        { gapCounter[d.document + ' (Expired)']        = (gapCounter[d.document + ' (Expired)'] || 0) + 1; }\n  for (const p of (emp.pending_acknowledgements || [])) { gapCounter[p.policy + ' (Not Acknowledged)'] = (gapCounter[p.policy + ' (Not Acknowledged)'] || 0) + 1; }\n}\nconst common_gaps = Object.entries(gapCounter)\n  .sort((a,b) => b[1] - a[1]).slice(0, 15)\n  .map(([gap, count]) => ({\n    'Gap Type':            gap,\n    'Affected Employees':  count,\n    'Percentage':          Math.round((count / totalEmployees) * 100) + '%'\n  }));\n\n// Critical employees\nconst critical_employees = employees\n  .filter(e => e.risk_level === 'High' || (e.compliance_score||100) < 60)\n  .sort((a,b) => (a.compliance_score||0) - (b.compliance_score||0))\n  .slice(0, 20)\n  .map(emp => ({\n    'Employee Name':      emp.employeeName,\n    'Employee ID':        emp.employeeID,\n    'Department':         emp.department,\n    'Compliance Score':   (emp.compliance_score||0) + '%',\n    'Risk Level':         emp.risk_level,\n    'Missing Documents':  (emp.missing_documents||[]).length,\n    'Expired Documents':  (emp.expired_documents||[]).length,\n    'Pending Policies':   (emp.pending_acknowledgements||[]).length,\n    'Priority':           (emp.compliance_score||0) < 50 ? 'Urgent' : 'High'\n  }));\n\n// Risk distribution\nconst risk_distribution = [\n  { 'Risk Level':'High',   'Count':highRiskCount,   'Percentage': Math.round((highRiskCount/totalEmployees)*100) + '%' },\n  { 'Risk Level':'Medium', 'Count':mediumRiskCount,  'Percentage': Math.round((mediumRiskCount/totalEmployees)*100) + '%' },\n  { 'Risk Level':'Low',    'Count':lowRiskCount,     'Percentage': Math.round((lowRiskCount/totalEmployees)*100) + '%' }\n];\n\n// All employees table\nconst all_employees = employees.map(emp => ({\n  'Employee Name':        emp.employeeName,\n  'Employee ID':          emp.employeeID,\n  'Department':           emp.department,\n  'Role':                 emp.role,\n  'Compliance Score':     (emp.compliance_score||0) + '%',\n  'Risk Level':           emp.risk_level,\n  'Total Gaps':           emp.total_gaps || 0,\n  'High Criticality Issues': emp.high_criticality_gaps || 0,\n  'Check Date':           emp.check_date\n}));\n\nreturn [{ json: { executive_summary, department_analysis, common_gaps, critical_employees, risk_distribution, all_employees } }];\n"
+      },
+      "id": "2f4b07e4-f33f-4c3a-b901-d0a1521cc2a8",
+      "name": "Generate Dashboard Analytics",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        14160,
+        3520
+      ],
+      "notes": "Create executive summary and analytics for master dashboard"
+    },
+    {
+      "parameters": {
+        "operation": "toFile",
+        "fileFormat": "xlsx",
+        "options": {
+          "headerRow": true,
+          "sheetName": "Dashboard"
+        }
+      },
+      "id": "425ccba9-8969-452f-af1b-f709c3496ce4",
+      "name": "Create Master Dashboard",
+      "type": "n8n-nodes-base.spreadsheetFile",
+      "typeVersion": 2,
+      "position": [
+        14560,
+        3504
+      ],
+      "notes": "Generate master Excel dashboard with all analytics"
+    },
+    {
+      "parameters": {
+        "name": "={{ 'HR_Compliance_Dashboard_' + $now.format('yyyy-MM-dd_HHmmss') + '.xlsx' }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1X-L0LcG77dIJPlrSVyQKb65GmaEnVbnt",
+          "mode": "list",
+          "cachedResultName": "n8n",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1X-L0LcG77dIJPlrSVyQKb65GmaEnVbnt"
+        },
+        "options": {}
+      },
+      "id": "3e7de53b-c278-4ab2-9596-dd6344559852",
+      "name": "Save Dashboard to Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        14752,
+        2864
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "t81VH6ZCVei6Bv3J",
+          "name": "Google Drive - Egeneration"
+        }
+      },
+      "notes": "Upload master dashboard to Google Drive"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "67890123-6789-0123-45f0-123456789012",
+              "leftValue": "={{ $('Generate Dashboard Analytics').item.json.executive_summary['High Risk Employees'] ?? 0 }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "85af1374-a9fe-4a61-a07c-b65a167d009d",
+      "name": "Check Critical Issues",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        14928,
+        3472
+      ],
+      "notes": "Determine if critical alerts need to be sent"
+    },
+    {
+      "parameters": {
+        "fromEmail": "shihir24@gmail.com",
+        "toEmail": "=fidamahtab1@gmail.com",
+        "subject": "=🚨 CRITICAL: High-Risk Compliance Issues Detected - {{ $now.format('MMMM DD, YYYY') }}",
+        "html": "=<html><body style=\"font-family: Arial, sans-serif; line-height: 1.6; color: #333;\"><h2 style=\"color: #d32f2f;\">🚨 CRITICAL HR COMPLIANCE ALERT</h2><div style=\"background-color: #f8d7da; border-left: 4px solid #dc3545; padding: 15px; margin: 20px 0;\"><h3>High-Risk Compliance Issues Detected</h3><p><strong>Report Date:</strong> {{ $now.format('MMMM dd, yyyy') }}</p><p><strong>High Risk Employees:</strong> {{ $('Generate Dashboard Analytics').item.json.executive_summary['High Risk Employees'] }}</p><p><strong>Average Compliance Score:</strong> {{ $('Generate Dashboard Analytics').item.json.executive_summary['Average Compliance Score'] }}</p></div><h3>Immediate Action Required</h3><p>Critical compliance gaps have been identified that require immediate attention. Please review the attached dashboard for detailed information.</p><p>The master compliance dashboard has been uploaded to Google Drive and contains:</p><ul><li>Executive Summary</li><li>Department Analysis</li><li>Critical Employees List</li><li>Common Compliance Gaps</li><li>Risk Distribution</li></ul><p style=\"margin-top: 30px; font-size: 12px; color: #666;\">This is an automated alert from the HR Compliance System.</p></body></html>",
+        "options": {
+          "attachments": "data"
+        }
+      },
+      "id": "cdadc8b7-9da5-4f7f-9931-43ee2716cb28",
+      "name": "Send Critical Alert Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        15152,
+        3040
+      ],
+      "webhookId": "38e72b50-0092-4508-96c3-2eef624efa7b",
+      "credentials": {
+        "smtp": {
+          "id": "8tMWYC9Dw7KeGPnU",
+          "name": "Gmail - Egeneration"
+        }
+      },
+      "notes": "Send urgent email for critical compliance issues"
+    },
+    {
+      "parameters": {
+        "fromEmail": "hr-compliance@yourcompany.com",
+        "toEmail": "hr-team@yourcompany.com",
+        "subject": "=Weekly HR Compliance Report - {{ $now.format('MMMM DD, YYYY') }}",
+        "html": "=<html><body style=\"font-family: Arial, sans-serif; line-height: 1.6; color: #333;\"><h2 style=\"color: #2e7d32;\">📊 Weekly HR Compliance Report</h2><div style=\"background-color: #d1ecf1; border-left: 4px solid #0c5460; padding: 15px; margin: 20px 0;\"><h3>Executive Summary</h3><p><strong>Report Date:</strong> {{ $now.format('MMMM dd, yyyy') }}</p><p><strong>Total Employees Checked:</strong> {{ $('Generate Dashboard Analytics').item.json.executive_summary['Total Employees Checked'] }}</p><p><strong>Average Compliance Score:</strong> {{ $('Generate Dashboard Analytics').item.json.executive_summary['Average Compliance Score'] }}</p><p><strong>Overall Status:</strong> {{ $('Generate Dashboard Analytics').item.json.executive_summary['Overall Status'] }}</p></div><h3>Risk Distribution</h3><ul><li><strong>High Risk:</strong> {{ $('Generate Dashboard Analytics').item.json.executive_summary['High Risk Employees'] }} employees</li><li><strong>Medium Risk:</strong> {{ $('Generate Dashboard Analytics').item.json.executive_summary['Medium Risk Employees'] }} employees</li><li><strong>Low Risk:</strong> {{ $('Generate Dashboard Analytics').item.json.executive_summary['Low Risk Employees'] }} employees</li></ul><h3>Next Steps</h3><p>The complete compliance dashboard has been uploaded to Google Drive with detailed analytics, department breakdowns, and actionable insights.</p><p style=\"margin-top: 30px; font-size: 12px; color: #666;\">This is an automated weekly report from the HR Compliance System.</p></body></html>",
+        "options": {
+          "attachments": "data"
+        }
+      },
+      "id": "4a0f9e21-67b6-4755-bcec-f555d896a1e7",
+      "name": "Send Summary Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        15152,
+        3296
+      ],
+      "webhookId": "392884fa-6685-44d5-a75f-ab161994d908",
+      "credentials": {
+        "smtp": {
+          "id": "8tMWYC9Dw7KeGPnU",
+          "name": "Gmail - Egeneration"
+        }
+      },
+      "notes": "Send regular weekly summary email"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare data for audit_log table insert\nconst gaps = $('Analyze Compliance Gaps').item.json;\nconst driveResult = $('Save to Google Drive').item?.json || {};\n\nreturn [{\n  json: {\n    employee_id:          gaps.employeeID,\n    employee_name:        gaps.employeeName,\n    compliance_score:     gaps.compliance_score,\n    risk_level:           gaps.risk_level,\n    total_gaps:           gaps.total_gaps,\n    high_criticality_gaps: gaps.high_criticality_gaps,\n    report_url:           driveResult.webViewLink || driveResult.webContentLink || '',\n    notifications_sent:   'Sent',\n    audit_date:           new Date().toISOString()\n  }\n}];"
+      },
+      "id": "56e9e403-64f8-4d1c-bf47-122dc7aa7f1f",
+      "name": "Prepare Audit Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        15280,
+        3168
+      ],
+      "notes": "Maps compliance gap analysis output to audit_log table columns"
+    },
+    {
+      "parameters": {
+        "tableId": "audit_log"
+      },
+      "id": "5fe3592a-ee92-418a-b22e-330b7f425ac9",
+      "name": "Log to Audit Trail",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        15488,
+        3168
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "p5QA5oySRDzqpMqn",
+          "name": "Supabase account 3"
+        }
+      },
+      "notes": "Insert compliance check result into Supabase audit_log table"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Signal Split Into Batches to continue to the next batch.\n// n8n's SplitInBatches reads from its own internal queue;\n// we just need to return a valid item so the connection fires.\nreturn [{ json: { loopStatus: 'continue', ts: new Date().toISOString() } }];"
+      },
+      "id": "0a3d5242-150f-4557-9f1f-6f6b698735d9",
+      "name": "Loop Back Check",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        15600,
+        3168
+      ],
+      "notes": "Control batch processing loop"
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "id": "73737f71-02bc-495b-8993-f068301fe961",
+      "name": "Split Into Batches",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        11744,
+        3040
+      ],
+      "notes": "Process 10 employees at a time to avoid rate limits"
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// ─────────────────────────────────────────────────────────────────\n// Flatten Dashboard Data\n// SpreadsheetFile (toFile) expects flat row items.\n// We output one item per sub-table row, tagged by 'sheet' field.\n// For a true multi-sheet xlsx the ExcelJS approach is recommended.\n// This flattening produces a single-sheet summary that Drive can index.\n// ─────────────────────────────────────────────────────────────────\nconst analytics = $input.item.json;\nconst rows = [];\n\n// Executive Summary rows\nconst es = analytics.executive_summary || {};\nfor (const [key, value] of Object.entries(es)) {\n  rows.push({ json: { Sheet:'Executive Summary', Metric: key, Value: String(value) } });\n}\n\n// Department Analysis rows\nfor (const row of (analytics.department_analysis || [])) {\n  rows.push({ json: { Sheet:'Department Analysis', ...row } });\n}\n\n// Risk Distribution rows\nfor (const row of (analytics.risk_distribution || [])) {\n  rows.push({ json: { Sheet:'Risk Distribution', ...row } });\n}\n\n// Common Gaps rows\nfor (const row of (analytics.common_gaps || [])) {\n  rows.push({ json: { Sheet:'Common Gaps', ...row } });\n}\n\n// Critical Employees rows\nfor (const row of (analytics.critical_employees || [])) {\n  rows.push({ json: { Sheet:'Critical Employees', ...row } });\n}\n\n// All Employees rows\nfor (const row of (analytics.all_employees || [])) {\n  rows.push({ json: { Sheet:'All Employees', ...row } });\n}\n\nreturn rows.length > 0 ? rows : [{ json: { Sheet:'Summary', Metric:'Status', Value:'No data' } }];\n"
+      },
+      "id": "a60d5fec-99ac-4a67-b21b-dd5a6111c0fd",
+      "name": "Flatten Dashboard Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        14336,
+        2832
+      ],
+      "notes": "Flattens nested analytics object into flat rows for SpreadsheetFile node."
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        12864,
+        2896
+      ],
+      "id": "8243c37b-3d1f-4a57-85d0-c6c94b452e8f",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "path": "get-compliance-data",
+        "options": {}
+      },
+      "id": "669f5f58-a199-4245-bed7-f37c73434617",
+      "name": "Get Data Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        10656,
+        3568
+      ],
+      "webhookId": "get-compliance-data"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "employees"
+      },
+      "id": "96779b9f-05c4-4423-92b0-9ca0c92a4285",
+      "name": "Fetch Employees",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        10848,
+        3568
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "p5QA5oySRDzqpMqn",
+          "name": "Supabase account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "compliance_matrix"
+      },
+      "id": "b1d54c3c-52ea-4502-a79a-098da25680a7",
+      "name": "Fetch Compliance Matrix",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        10848,
+        3760
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "p5QA5oySRDzqpMqn",
+          "name": "Supabase account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "document_inventory"
+      },
+      "id": "ca62d8e6-813f-4e7f-9535-9db59163579a",
+      "name": "Fetch Doc Inventory",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        10848,
+        3936
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "p5QA5oySRDzqpMqn",
+          "name": "Supabase account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "policy_acknowledgements"
+      },
+      "id": "004bde74-5bae-4aa2-bb51-4b1e54d2e2ec",
+      "name": "Fetch Policies",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        10848,
+        4128
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "p5QA5oySRDzqpMqn",
+          "name": "Supabase account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "audit_log"
+      },
+      "id": "85ca94af-b8fb-414b-8906-9338267d8c17",
+      "name": "Fetch Audit Log",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        11056,
+        3568
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "p5QA5oySRDzqpMqn",
+          "name": "Supabase account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst rawEmployees = $('Fetch Employees').all().map(i => i.json);\nconst requirements = $('Fetch Compliance Matrix').all().map(i => i.json);\nconst inventory   = $('Fetch Doc Inventory').all().map(i => i.json);\nconst policies    = $('Fetch Policies').all().map(i => i.json);\nconst auditLog    = $('Fetch Audit Log').all().map(i => i.json).sort((a, b) => new Date(b.audit_date) - new Date(a.audit_date));\n\nconst universalDocs = [\n  { document_type: 'Employment Contract', validity_period: 0, criticality: 'High', category: 'Onboarding' },\n  { document_type: 'ID Proof', validity_period: 60, criticality: 'High', category: 'Legal' },\n  { document_type: 'Address Proof', validity_period: 12, criticality: 'Medium', category: 'Legal' },\n  { document_type: 'Educational Certificates', validity_period: 0, criticality: 'High', category: 'Onboarding' },\n  { document_type: 'Background Check', validity_period: 24, criticality: 'High', category: 'Legal' },\n  { document_type: 'Tax Forms', validity_period: 12, criticality: 'High', category: 'Payroll' },\n  { document_type: 'Emergency Contact', validity_period: 12, criticality: 'Medium', category: 'HR' },\n  { document_type: 'Bank Details', validity_period: 0, criticality: 'High', category: 'Payroll' }\n];\nconst requiredPolicies = ['Code of Conduct','Data Privacy Policy','Anti-Harassment Policy','Information Security Policy','Confidentiality Agreement'];\nconst today = new Date();\n\nconst processedEmployees = rawEmployees.map(emp => {\n  const empDocs = inventory.filter(d => d.employee_id === emp.emp_id);\n  const empPols = policies.filter(p => p.employee_id === emp.emp_id);\n  \n  // Filter for both role-based and employee-specific requirements\n  const roleReqs = requirements.filter(r => \n    !r.employee_id && \n    (r.department === 'All' || r.department === emp.department) && \n    (r.role === 'All' || r.role === emp.role)\n  );\n  const personalReqs = requirements.filter(r => r.employee_id === emp.emp_id);\n  \n  const allReqs = [...universalDocs];\n  [...roleReqs, ...personalReqs].forEach(rr => {\n    if (!allReqs.find(ar => ar.document_type.toLowerCase() === rr.document_type.toLowerCase())) {\n      allReqs.push(rr);\n    }\n  });\n\n  const gaps = { missing_documents: [], expired_documents: [], expiring_soon: [], pending_acknowledgements: [] };\n  allReqs.forEach(req => {\n    const found = empDocs.find(d => d.doc_type.toLowerCase() === req.document_type.toLowerCase());\n    if (!found) { gaps.missing_documents.push({ document: req.document_type, criticality: req.criticality, category: req.category, action: 'Upload Required' }); }\n    else if (req.validity_period > 0 && found.expiry_date) {\n      const days = Math.floor((new Date(found.expiry_date) - today) / 86400000);\n      if (days < 0) gaps.expired_documents.push({ document: req.document_type, expiry_date: found.expiry_date, days_overdue: Math.abs(days), criticality: req.criticality, action: 'Renew Immediately' });\n      else if (days <= 30) gaps.expiring_soon.push({ document: req.document_type, expiry_date: found.expiry_date, days_remaining: days, criticality: req.criticality, action: 'Schedule Renewal' });\n    }\n  });\n  requiredPolicies.forEach(pName => {\n    if (!empPols.find(p => p.policy_name.toLowerCase().includes(pName.toLowerCase().split(' ')[0])))\n      gaps.pending_acknowledgements.push({ policy: pName, status: 'Not Acknowledged', action: 'Acknowledge Policy' });\n  });\n\n  const totalReqs = allReqs.length + requiredPolicies.length;\n  const totalGaps = gaps.missing_documents.length + gaps.expired_documents.length + gaps.expiring_soon.length + gaps.pending_acknowledgements.length;\n  const score = Math.round(((totalReqs - totalGaps) / totalReqs) * 100);\n  const highCrit = [...gaps.missing_documents, ...gaps.expired_documents].filter(d => d.criticality === 'High').length;\n  const risk = score < 60 || highCrit >= 3 ? 'High' : score < 85 || highCrit >= 1 ? 'Medium' : 'Low';\n\n  return { employeeID: emp.emp_id, employeeName: emp.name, email: emp.email, department: emp.department, role: emp.role, compliance_score: score, risk_level: risk, total_required: totalReqs, total_gaps: totalGaps, high_criticality_gaps: highCrit, ...gaps };\n});\n\nconst total = processedEmployees.length;\nconst avg = total > 0 ? Math.round(processedEmployees.reduce((s,e) => s + e.compliance_score, 0) / total) : 0;\n\nreturn [{ json: {\n  employees: processedEmployees,\n  auditLog: auditLog.map(l => ({ ...l, report_url: l.report_url || l.report_generated || null })),\n  stats: { totalEmployees: total, averageCompliance: avg, highRiskCount: processedEmployees.filter(e => e.risk_level === 'High').length, mediumRiskCount: processedEmployees.filter(e => e.risk_level === 'Medium').length, lowRiskCount: processedEmployees.filter(e => e.risk_level === 'Low').length, reportDate: today.toISOString().split('T')[0], overallStatus: avg >= 90 ? 'Healthy' : avg >= 70 ? 'Warning' : 'Critical' }\n}}];\n"
+      },
+      "id": "9555ae08-ff93-4d2c-8b28-aab7288291c7",
+      "name": "Format Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        11248,
+        3568
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "290fcf24-a7a5-4f40-81ba-781f0b134c7e",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        11456,
+        3568
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition-1",
+              "leftValue": "={{ $json.total_gaps }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "2d6a7a3d-2f36-4f0a-98c9-e57fde7d3d14",
+      "name": "Filter Employees With Missing Docs",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        11616,
+        2032
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Extract employee email, name, and compliance data\nconst employee = $json;\n\n// Extract missing documents as comma-separated string\nconst missingDocsList = (employee.missing_documents || [])\n  .map(doc => doc.document)\n  .join(', ');\n\n// Extract expired documents as comma-separated string\nconst expiredDocsList = (employee.expired_documents || [])\n  .map(doc => doc.document)\n  .join(', ');\n\n// Extract pending policies as comma-separated string\nconst pendingPoliciesList = (employee.pending_acknowledgements || [])\n  .map(policy => policy.policy)\n  .join(', ');\n\nreturn {\n  json: {\n    employeeEmail: employee.email || `${employee.employeeID}@company.com`,\n    employeeName: employee.employeeName || '',\n    missingDocsList: missingDocsList || 'None',\n    expiredDocsList: expiredDocsList || 'None',\n    pendingPoliciesList: pendingPoliciesList || 'None',\n    complianceScore: employee.compliance_score || 0,\n    riskLevel: employee.risk_level || 'Unknown'\n  }\n};"
+      },
+      "id": "629509cc-d05b-4303-a892-ea2bf4fd2d14",
+      "name": "Prepare Email Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        11840,
+        2032
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "options": {}
+      },
+      "id": "df188239-24fe-472a-b56d-1a6b86c096ca",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        12064,
+        2256
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "oa3vEUW0Mb0fryvH",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"subject\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"description\": \"Email subject line\"\n\t\t},\n\t\t\"emailBody\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"description\": \"HTML formatted email body with personalized message\"\n\t\t},\n\t\t\"missingDocuments\": {\n\t\t\t\"type\": \"array\",\n\t\t\t\"items\": {\n\t\t\t\t\"type\": \"string\"\n\t\t\t},\n\t\t\t\"description\": \"List of missing document names\"\n\t\t}\n\t},\n\t\"required\": [\"subject\", \"emailBody\", \"missingDocuments\"]\n}"
+      },
+      "id": "4c9c9d14-291d-41cc-8968-9862fba1732b",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        12192,
+        2256
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Employee Name: {{ $json.employeeName }}, Missing Documents: {{ $json.missingDocsList }}, Expired Documents: {{ $json.expiredDocsList }}, Pending Policies: {{ $json.pendingPoliciesList }}, Compliance Score: {{ $json.complianceScore }}%, Risk Level: {{ $json.riskLevel }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an HR compliance assistant. Generate a professional, personalized email to an employee about their missing compliance documents.\n\nYour task is to:\n1. Write a friendly greeting using the employee's name\n2. Clearly explain which documents are missing\n3. List any expired documents that need renewal\n4. Mention pending policy acknowledgements\n5. Include a polite call to action with deadline\n6. Provide contact information for questions\n\nTone should be professional but supportive. The goal is to help employees understand their compliance gaps and take action without feeling overwhelmed or criticized."
+        }
+      },
+      "id": "eb7eeb4e-6a99-428d-90c2-28cd473410c4",
+      "name": "Generate Personalized Email",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        12064,
+        2032
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "toEmail",
+              "value": "={{ $('Prepare Email Data').item.json.employeeEmail }}",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "subject",
+              "value": "={{ $json.subject }}",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "emailBody",
+              "value": "={{ $json.emailBody }}",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "employeeName",
+              "value": "={{ $('Prepare Email Data').item.json.employeeName }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e73beff9-9fc9-488f-b6a2-2f765dbcaaf4",
+      "name": "Format Email Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        12416,
+        2032
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.toEmail }}",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.emailBody }}",
+        "options": {
+          "ccList": "shihir24@gmail.com"
+        }
+      },
+      "id": "16212389-49f4-4a14-9d21-27fb48aefbd5",
+      "name": "Send Email to Employee",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        12640,
+        2032
+      ],
+      "webhookId": "79e86de7-1476-45b6-83f5-c4c8006e4c52",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CBNEsCk2ENPqTXZ5",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Employee List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Employee List": {
+      "main": [
+        [
+          {
+            "node": "Split Into Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Employee Variables": {
+      "main": [
+        [
+          {
+            "node": "Get Required Documents",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Employee Documents",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Policy Acknowledgements",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Required Documents": {
+      "main": [
+        [
+          {
+            "node": "Filter Required Docs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Required Docs": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Employee Documents": {
+      "main": [
+        [
+          {
+            "node": "Filter Employee Docs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Employee Docs": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Get Policy Acknowledgements": {
+      "main": [
+        [
+          {
+            "node": "Filter Employee Policies",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Compliance Gaps": {
+      "main": [
+        [
+          {
+            "node": "Check Risk Level",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Filter Employees With Missing Docs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Risk Level": {
+      "main": [
+        [
+          {
+            "node": "Prepare Employee Report Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Employee Report Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Employee Report Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Employee Report Data": {
+      "main": [
+        [
+          {
+            "node": "Create Employee Excel Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Employee Excel Report": {
+      "main": [
+        [
+          {
+            "node": "Save to Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Aggregate All Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate All Results": {
+      "main": [
+        [
+          {
+            "node": "Generate Dashboard Analytics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Dashboard Analytics": {
+      "main": [
+        [
+          {
+            "node": "Flatten Dashboard Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Master Dashboard": {
+      "main": [
+        [
+          {
+            "node": "Save Dashboard to Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Dashboard to Drive": {
+      "main": [
+        [
+          {
+            "node": "Check Critical Issues",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Critical Issues": {
+      "main": [
+        [
+          {
+            "node": "Send Critical Alert Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Summary Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Critical Alert Email": {
+      "main": [
+        [
+          {
+            "node": "Prepare Audit Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Summary Email": {
+      "main": [
+        [
+          {
+            "node": "Prepare Audit Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Audit Data": {
+      "main": [
+        [
+          {
+            "node": "Log to Audit Trail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Audit Trail": {
+      "main": [
+        [
+          {
+            "node": "Loop Back Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Back Check": {
+      "main": [
+        []
+      ]
+    },
+    "Split Into Batches": {
+      "main": [
+        [
+          {
+            "node": "Set Employee Variables",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Employee Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Flatten Dashboard Data": {
+      "main": [
+        [
+          {
+            "node": "Create Master Dashboard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Employee Policies": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Analyze Compliance Gaps",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Data Webhook": {
+      "main": [
+        [
+          {
+            "node": "Fetch Employees",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Compliance Matrix",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Doc Inventory",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Policies",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Audit Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Employees": {
+      "main": [
+        [
+          {
+            "node": "Format Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Compliance Matrix": {
+      "main": [
+        [
+          {
+            "node": "Format Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Doc Inventory": {
+      "main": [
+        [
+          {
+            "node": "Format Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Policies": {
+      "main": [
+        [
+          {
+            "node": "Format Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Audit Log": {
+      "main": [
+        [
+          {
+            "node": "Format Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Data": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Employees With Missing Docs": {
+      "main": [
+        [
+          {
+            "node": "Prepare Email Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Email Data": {
+      "main": [
+        [
+          {
+            "node": "Generate Personalized Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate Personalized Email",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Generate Personalized Email",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Personalized Email": {
+      "main": [
+        [
+          {
+            "node": "Format Email Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Email Fields": {
+      "main": [
+        [
+          {
+            "node": "Send Email to Employee",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email to Employee": {
+      "main": [
+        [
+          {
+            "node": "Prepare Employee Report Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "d47592a4-9d2e-431d-8175-afa1b280286f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "898e44a69db35a70d2379481bceaebcbfd02bb7c31643d67b982a21d08d766d1"
+  },
+  "id": "l4IkkxyNNp1k2lqX",
+  "tags": [
+    {
+      "updatedAt": "2026-02-17T11:04:26.981Z",
+      "createdAt": "2026-02-17T11:04:26.981Z",
+      "id": "CsZSt5jjzlIaOQne",
+      "name": "HR"
+    },
+    {
+      "updatedAt": "2026-02-17T11:11:56.129Z",
+      "createdAt": "2026-02-17T11:11:56.129Z",
+      "id": "J2Te2clIvwQ2dZNK",
+      "name": "Google Drive"
+    },
+    {
+      "updatedAt": "2026-02-16T08:24:33.589Z",
+      "createdAt": "2026-02-16T08:24:33.589Z",
+      "id": "WlGfbMKXEfqhFKVS",
+      "name": "HR Automation"
+    },
+    {
+      "updatedAt": "2026-02-17T11:11:56.160Z",
+      "createdAt": "2026-02-17T11:11:56.160Z",
+      "id": "er5wQzFONxvuE8DG",
+      "name": "Google Sheets"
+    },
+    {
+      "updatedAt": "2026-02-17T11:04:27.014Z",
+      "createdAt": "2026-02-17T11:04:27.014Z",
+      "id": "hFP99LEBWz1u5SMk",
+      "name": "Compliance"
+    },
+    {
+      "updatedAt": "2026-02-17T11:04:27.038Z",
+      "createdAt": "2026-02-17T11:04:27.038Z",
+      "id": "wgEMmaEsjdlyd4xU",
+      "name": "Automation"
+    }
+  ]
+}
